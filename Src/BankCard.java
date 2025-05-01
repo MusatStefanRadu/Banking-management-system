@@ -9,15 +9,17 @@ public abstract class BankCard {
     protected BankAccount linkedAccount;
     protected boolean isActive;
     protected String cvv;
+    protected String pin;
 
     // constructor
-    public BankCard(String cardNumber, String cardHolderName, LocalDate expiryDate, BankAccount linkedAccount, String cvv) {
+    public BankCard(String cardNumber, String cardHolderName, LocalDate expiryDate, BankAccount linkedAccount, String cvv, String pin) {
         this.cardNumber = cardNumber;
         this.cardHolderName = cardHolderName;
         this.expiryDate = expiryDate;
         this.linkedAccount = linkedAccount;
         this.cvv = cvv;
         this.isActive = false; // default: cand creezi cardul, e inactiv
+        this.pin = pin;
     }
 
     // getters
@@ -38,6 +40,9 @@ public abstract class BankCard {
     }
     public String getCvv() {
         return cvv;
+    }
+    public String getPin() {
+        return pin;
     }
 
     // setters

@@ -3,23 +3,18 @@ import java.time.LocalDate;
 public class CreditCard extends BankCard {
 
     // fields specific to CreditCard
-    private String pin;
     private double creditLimit;
     private double amountOwed;
 
     // constructor
     public CreditCard(String cardNumber, String cardHolderName, LocalDate expiryDate, BankAccount linkedAccount, String cvv, String pin, double creditLimit) {
-        super(cardNumber, cardHolderName, expiryDate, linkedAccount, cvv); // apelam constructorul din BankCard
-        this.pin = pin;
+        super(cardNumber, cardHolderName, expiryDate, linkedAccount, cvv, pin); // apelam constructorul din BankCard
         this.creditLimit = creditLimit;
         this.amountOwed = 0.0; // initial clientul nu are datorii
         this.isActive = false; // cardul este dezactivat initial
     }
 
     // getters
-    public String getPin() {
-        return pin;
-    }
     public double getCreditLimit() {
         return creditLimit;
     }
@@ -28,16 +23,8 @@ public class CreditCard extends BankCard {
     }
 
     // setters
-    public void setPin(String pin) {
-        this.pin = pin;
-    }
     public void setCreditLimit(double creditLimit) {
         this.creditLimit = creditLimit;
-    }
-
-    // method to verify if the entered pin is correct
-    public boolean verifyPin(String inputPin) {
-        return this.pin.equals(inputPin);
     }
 
     // method to make a purchase

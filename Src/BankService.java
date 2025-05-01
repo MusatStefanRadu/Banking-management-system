@@ -21,16 +21,20 @@ public class BankService {
     public void addCustomer(Customer customer) {
         customers.add(customer);
         System.out.println("Customer added: " + customer.getFirstName() + " " + customer.getLastName());
+        AuditLogger.log("Customer added: " + customer.getFirstName() + " " + customer.getLastName());
     }
     public void addAccount(BankAccount account) {
         accounts.add(account);
         System.out.println("Account added for IBAN: " + account.getIban());
+        AuditLogger.log("Account created: " + account.getIban() + " for " +
+                account.getCustomer().getFirstName() + " " + account.getCustomer().getLastName());
     }
     public void addCard(BankCard card) {
         cards.add(card);
         System.out.println("Card added for customer: " + card.getCardHolderName());
+        AuditLogger.log("Card created for: " + card.getCardHolderName());
     }
-    // metoda de transfer de bani între conturi
+    // method for money transfer
     public void transferMoney(BankAccount from, BankAccount to, double amount, String description) {
         if (amount <= 0) {
             System.out.println("Amount must be positive.");
@@ -42,12 +46,25 @@ public class BankService {
         }
 
         from.withdraw(amount);
-        to.deposit(amount);
+
+        double receivedAmount;
+        if (!from.getCurrency().equals(to.getCurrency())) {
+            receivedAmount = CurrencyConverter.convert(from.getCurrency(), to.getCurrency(), amount);
+        } else {
+            receivedAmount = amount;
+        }
+
+        to.deposit(receivedAmount);
 
         Transaction transaction = new Transaction(from, to, amount, description);
         transactions.add(transaction);
 
         System.out.println("Transfer successful. Transaction ID: " + transaction.getId());
+        AuditLogger.log("Transfer of " + amount + " " + from.getCurrency() +
+                " from " + from.getIban() +
+                " to " + to.getIban() +
+                " (" + receivedAmount + " " + to.getCurrency() + ")"
+        );
     }
 
     // returnează tranzacțiile pentru un cont dat

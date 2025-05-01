@@ -4,40 +4,32 @@ public class PrepaidCard extends BankCard{
 
     //fields
     private double balance;
-    private String pin;
 
     //constructor
-    public PrepaidCard(String cardNumber, String cardHolderName, LocalDate expiryDate, String cvv, double balance, String pin) {
-        super(cardNumber, cardHolderName, expiryDate, null, cvv);
+    public PrepaidCard(String cardNumber, String cardHolderName, LocalDate expiryDate, String cvv, String pin, double balance) {
+        super(cardNumber, cardHolderName, expiryDate, null, cvv, pin);
         this.balance = balance;
-        this.pin = pin;
     }
 
     //getters
     public double getBalance() {
         return balance;
     }
-    public String getPin() {
-        return pin;
+
+    @Override
+    public BankAccount getLinkedAccount() {
+        throw new UnsupportedOperationException("PrepaidCard does not support linked accounts.");
     }
 
     //setters
     public void setBalance(double balance) {
         this.balance = balance;
     }
-    public void setPin(String pin) {
-        this.pin = pin;
-    }
-
-    //method for PIN verify
-    public boolean verifyPin(String inputPin) {
-        return this.pin.equals(inputPin);
-    }
 
     //methods
     public void reload(double amount) {
         if (amount < 0) {
-            System.out.println("Reloadd amount must be a positive number");
+            System.out.println("Reload amount must be a positive number");
             return;
         }
         balance += amount;
