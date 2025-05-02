@@ -1,3 +1,7 @@
+package Account;
+
+import Model.Customer;
+
 public class SavingsAccount extends BankAccount {
 
     //additional fields
@@ -41,7 +45,7 @@ public class SavingsAccount extends BankAccount {
 
     @Override
     public String toString() {
-        return "SavingsAccount{\n" +
+        return "Account.SavingsAccount{\n" +
                 "iban: " + iban + "\n" +
                 "balance: " + balance + "\n" +
                 "minimumBalance: " + minimumBalance + "\n" +

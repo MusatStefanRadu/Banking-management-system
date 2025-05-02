@@ -1,4 +1,8 @@
-public class BusinessAccount extends BankAccount{
+package Account;
+
+import Model.Customer;
+
+public class BusinessAccount extends BankAccount {
     //fields
     private String companyName;
     private String registrationNumber;
@@ -51,7 +55,7 @@ public class BusinessAccount extends BankAccount{
 
     @Override
     public String toString() {
-        return "BusinessAccount{\n" +
+        return "Account.BusinessAccount{\n" +
                 "iban: " + iban + "\n" +
                 "balance: " + balance + "\n" +
                 "companyName: " + companyName + "\n" +

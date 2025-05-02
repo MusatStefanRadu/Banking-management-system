@@ -1,4 +1,7 @@
+package Card;
+
 import java.time.LocalDate;
+import Account.BankAccount;
 
 public abstract class BankCard {
 
@@ -60,7 +63,7 @@ public abstract class BankCard {
 
     @Override
     public String toString() {
-        return "BankCard{\n" +
+        return "Card.BankCard{\n" +
                 "cardNumber: " + cardNumber + "\n" +
                 "cardHolderName: " + cardHolderName + "\n" +
                 "expiryDate: " + expiryDate + "\n" +

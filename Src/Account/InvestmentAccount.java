@@ -1,3 +1,7 @@
+package Account;
+
+import Model.Customer;
+
 public class InvestmentAccount extends BankAccount {
 
     //fields
@@ -79,7 +83,7 @@ public class InvestmentAccount extends BankAccount {
     // toString method
     @Override
     public String toString() {
-        return "InvestmentAccount{\n" +
+        return "Account.InvestmentAccount{\n" +
                 "iban: " + iban + "\n" +
                 "balance: " + balance + "\n" +
                 "portfolioValue: " + portfolioValue + "\n" +

@@ -1,3 +1,7 @@
+package Service;
+
+import Card.BankCard;
+
 public class CardAuthenticator {
 
     public static boolean authenticate(BankCard card, String enteredPin) {

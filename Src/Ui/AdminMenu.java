@@ -1,3 +1,10 @@
+package Ui;
+
+import Account.*;
+import Card.*;
+import Model.Customer;
+import Service.*;
+
 import java.util.Scanner;
 import java.time.LocalDate;
 
@@ -78,7 +85,7 @@ public class AdminMenu {
 
         Customer customer = bankService.findCustomerByCNP(cnp);
         if (customer == null) {
-            System.out.println("Customer not found.");
+            System.out.println("Model.Customer not found.");
             return;
         }
 
@@ -112,7 +119,7 @@ public class AdminMenu {
 
             case "business":
                 if (!customer.getIsCompany()) {
-                    System.out.println("Customer is not a company. Cannot create business account.");
+                    System.out.println("Model.Customer is not a company. Cannot create business account.");
                     return;
                 }
                 System.out.print("Company name: ");
@@ -146,7 +153,7 @@ public class AdminMenu {
 
         Customer customer = bankService.findCustomerByCNP(cnp);
         if(customer == null) {
-            System.out.println("Customer not found.");
+            System.out.println("Model.Customer not found.");
             return;
         }
 

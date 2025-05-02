@@ -1,4 +1,7 @@
+package Card;
+
 import java.time.LocalDate;
+import Account.BankAccount;
 
 public class VirtualCard extends BankCard {
 
@@ -46,7 +49,7 @@ public class VirtualCard extends BankCard {
 
     @Override
     public String toString() {
-        return "VirtualCard{\n" +
+        return "Card.VirtualCard{\n" +
                 "cardNumber: " + cardNumber + "\n" +
                 "cardHolderName: " + cardHolderName + "\n" +
                 "expiryDate: " + expiryDate + "\n" +

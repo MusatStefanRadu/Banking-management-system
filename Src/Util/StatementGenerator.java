@@ -1,3 +1,8 @@
+package Util;
+
+import Account.BankAccount;
+import Model.Transaction;
+
 import java.util.List;
 
 public class StatementGenerator {

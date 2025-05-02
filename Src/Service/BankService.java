@@ -1,3 +1,11 @@
+package Service;
+
+import Account.BankAccount;
+import Card.BankCard;
+import Model.Customer;
+import Model.Transaction;
+import Util.CurrencyConverter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +28,8 @@ public class BankService {
     //methods
     public void addCustomer(Customer customer) {
         customers.add(customer);
-        System.out.println("Customer added: " + customer.getFirstName() + " " + customer.getLastName());
-        AuditLogger.log("Customer added: " + customer.getFirstName() + " " + customer.getLastName());
+        System.out.println("Model.Customer added: " + customer.getFirstName() + " " + customer.getLastName());
+        AuditLogger.log("Model.Customer added: " + customer.getFirstName() + " " + customer.getLastName());
     }
     public void addAccount(BankAccount account) {
         accounts.add(account);
@@ -59,7 +67,7 @@ public class BankService {
         Transaction transaction = new Transaction(from, to, amount, description);
         transactions.add(transaction);
 
-        System.out.println("Transfer successful. Transaction ID: " + transaction.getId());
+        System.out.println("Transfer successful. Model.Transaction ID: " + transaction.getId());
         AuditLogger.log("Transfer of " + amount + " " + from.getCurrency() +
                 " from " + from.getIban() +
                 " to " + to.getIban() +
@@ -113,4 +121,11 @@ public class BankService {
         return customers;
     }
 
+    public BankCard findCardByNumber(String nr) {
+        for (BankCard c : cards) {
+            if (c.getCardNumber().equals(nr)) {}
+                return c;
+        }
+        return null;
+    }
 }

@@ -1,3 +1,5 @@
+package Model;
+
 public class Customer {
     private String firstName;
     private String lastName;
@@ -64,12 +66,12 @@ public class Customer {
     @Override
     public String toString()
     {
-        return "Customer{" + "\n" +
+        return "Model.Customer{" + "\n" +
                 "firstName : " + firstName + "\n" +
                 "lastName : " + lastName + "\n" +
                 "personalIdentificationNumber : " + personalIdentificationNumber + "\n" +
                 "address : " + address + "\n" +
-                "age : " + age +
+                "age : " + age + "\n" +
                 "isCompany : " + isCompany + "\n" +
                 "}";
     }

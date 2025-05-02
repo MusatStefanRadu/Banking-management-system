@@ -1,3 +1,7 @@
+package Account;
+
+import Model.Customer;
+
 public abstract class BankAccount {
 
     //------------------------------------------fields-----------------------------------------------------
@@ -45,7 +49,7 @@ public abstract class BankAccount {
     //-----------------------------------------toString method---------------------------------------------
     @Override
     public String toString() {
-        return "BankAccount{\n" +
+        return "Account.BankAccount{\n" +
                 "iban: " + iban + "\n" +
                 "balance: " + balance + "\n" +
                 "customer: " + customer + "\n" +

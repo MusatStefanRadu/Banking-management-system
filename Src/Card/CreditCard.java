@@ -1,14 +1,17 @@
+package Card;
+
 import java.time.LocalDate;
+import Account.BankAccount;
 
 public class CreditCard extends BankCard {
 
-    // fields specific to CreditCard
+    // fields specific to Card.CreditCard
     private double creditLimit;
     private double amountOwed;
 
     // constructor
     public CreditCard(String cardNumber, String cardHolderName, LocalDate expiryDate, BankAccount linkedAccount, String cvv, String pin, double creditLimit) {
-        super(cardNumber, cardHolderName, expiryDate, linkedAccount, cvv, pin); // apelam constructorul din BankCard
+        super(cardNumber, cardHolderName, expiryDate, linkedAccount, cvv, pin); // apelam constructorul din Card.BankCard
         this.creditLimit = creditLimit;
         this.amountOwed = 0.0; // initial clientul nu are datorii
         this.isActive = false; // cardul este dezactivat initial
@@ -63,7 +66,7 @@ public class CreditCard extends BankCard {
     // toString method
     @Override
     public String toString() {
-        return "CreditCard{\n" +
+        return "Card.CreditCard{\n" +
                 "cardNumber: " + cardNumber + "\n" +
                 "cardHolderName: " + cardHolderName + "\n" +
                 "expiryDate: " + expiryDate + "\n" +

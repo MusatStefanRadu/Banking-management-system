@@ -1,3 +1,7 @@
+package Model;
+
+import Account.BankAccount;
+
 import java.time.LocalDate;
 
 public class Transaction {
@@ -47,7 +51,7 @@ public class Transaction {
     //toString method
     @Override
     public String toString() {
-        return "Transaction{\n" +
+        return "Model.Transaction{\n" +
                 "id: " + id + "\n" +
                 "from: " + sourceAccount.getIban() + "\n" +
                 "to: " + destinationAccount.getIban() + "\n" +

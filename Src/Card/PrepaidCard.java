@@ -1,6 +1,9 @@
-import java.time.LocalDate;
+package Card;
 
-public class PrepaidCard extends BankCard{
+import java.time.LocalDate;
+import Account.BankAccount;
+
+public class PrepaidCard extends BankCard {
 
     //fields
     private double balance;
@@ -18,7 +21,7 @@ public class PrepaidCard extends BankCard{
 
     @Override
     public BankAccount getLinkedAccount() {
-        throw new UnsupportedOperationException("PrepaidCard does not support linked accounts.");
+        throw new UnsupportedOperationException("Card.PrepaidCard does not support linked accounts.");
     }
 
     //setters
@@ -56,7 +59,7 @@ public class PrepaidCard extends BankCard{
     // toString
     @Override
     public String toString() {
-        return "PrepaidCard{\n" +
+        return "Card.PrepaidCard{\n" +
                 "cardNumber: " + cardNumber + "\n" +
                 "cardHolderName: " + cardHolderName + "\n" +
                 "expiryDate: " + expiryDate + "\n" +
