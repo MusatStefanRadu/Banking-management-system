@@ -87,4 +87,30 @@ public class BankService {
             }
         }
     }
+
+    // gaseste un client dupa CNP
+    public Customer findCustomerByCNP(String cnp)
+    {
+        for (Customer c : customers) {
+            if(c.getPersonalIdentificationNumber().equals(cnp)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    // gaseste un cont dupa IBAN
+    public BankAccount findBankAccountByIban(String iban) {
+        for (BankAccount acc : accounts) {
+            if (acc.getIban().equals(iban)) {
+                return acc;
+            }
+        }
+        return null;
+    }
+
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
 }

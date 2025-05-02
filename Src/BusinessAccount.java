@@ -1,11 +1,11 @@
-public class BussinesAccount extends BankAccount{
+public class BusinessAccount extends BankAccount{
     //fields
     private String companyName;
     private String registrationNumber;
     private String vatNumber;
 
     //constructor
-    public BussinesAccount(String iban, double balance, Customer customer, String currency, String companyName, String registrationNumber, String vatNumber)
+    public BusinessAccount(String iban, double balance, Customer customer, String currency, String companyName, String registrationNumber, String vatNumber)
     {
         super(iban, balance, customer, currency);
         if (!customer.getIsCompany()) {
