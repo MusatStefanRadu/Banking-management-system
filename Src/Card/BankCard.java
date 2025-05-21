@@ -2,6 +2,9 @@ package Card;
 
 import java.time.LocalDate;
 import Account.BankAccount;
+import Model.TransactionCard;
+
+import java.util.*;
 
 public abstract class BankCard {
 
@@ -13,6 +16,9 @@ public abstract class BankCard {
     protected boolean isActive;
     protected String cvv;
     protected String pin;
+
+    protected List<TransactionCard> transactions = new ArrayList<>();
+
 
     // constructor
     public BankCard(String cardNumber, String cardHolderName, LocalDate expiryDate, BankAccount linkedAccount, String cvv, String pin) {
@@ -59,6 +65,13 @@ public abstract class BankCard {
     }
     public void deactivateCard() {
         this.isActive = false;
+    }
+    public void addTranzactie(TransactionCard transaction) {
+        transactions.add(transaction);
+    }
+
+    public List<TransactionCard> getTranzactii() {
+        return transactions;
     }
 
     @Override

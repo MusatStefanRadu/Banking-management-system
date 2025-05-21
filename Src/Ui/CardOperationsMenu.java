@@ -1,9 +1,13 @@
 package Ui;
 
 import Card.BankCard;
+import Card.CreditCard;
+import Card.PrepaidCard;
+import Card.VirtualCard;
+import Model.TransactionCard;
 import Service.BankService;
 
-import java.util.Scanner;
+import java.util.*;
 
 public class CardOperationsMenu {
 
@@ -36,7 +40,9 @@ public class CardOperationsMenu {
             System.out.println("1. Activate card");
             System.out.println("2. Deactivate card");
             System.out.println("3. Show card details");
-            System.out.println("4. Back");
+            System.out.println("4. Make a payment card");
+            System.out.println("5. Show all transactions");
+            System.out.println("6. Exit");
             System.out.print("Choose an option: ");
 
             String option = scanner.nextLine();
@@ -57,6 +63,42 @@ public class CardOperationsMenu {
                     break;
 
                 case "4":
+                    System.out.print("Enter merchant name: ");
+                    String merchant = scanner.nextLine();
+
+                    System.out.print("Enter amount: ");
+                    double amount;
+                    try {
+                        amount = Double.parseDouble(scanner.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid amount.");
+                        break;
+                    }
+
+                    if (card instanceof CreditCard) {
+                        ((CreditCard) card).makePurchase(amount, merchant);
+                    } else if (card instanceof PrepaidCard) {
+                        ((PrepaidCard) card).spend(amount, merchant);
+                    } else if (card instanceof VirtualCard) {
+                        ((VirtualCard) card).useCard(amount, merchant);
+                    } else {
+                        System.out.println("This card type does not support payments.");
+                    }
+                    break;
+
+                case "5":
+                    List<TransactionCard> tranzactii = card.getTranzactii();
+                    if (tranzactii.isEmpty()) {
+                        System.out.println("No transactions available.");
+                    } else {
+                        System.out.println("--- Transaction History ---");
+                        for (TransactionCard t : tranzactii) {
+                            System.out.println(t);
+                        }
+                    }
+                    break;
+
+                case "6":
                     inCardMenu = false;
                     break;
 

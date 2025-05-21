@@ -1,4 +1,5 @@
 package Service;
+import java.util.*;
 
 import Account.BankAccount;
 import Card.BankCard;
@@ -16,6 +17,8 @@ public class BankService {
     private List<BankAccount> accounts;
     private List<BankCard> cards;
     private List<Customer> customers;
+    private TreeMap<String, Customer> customerMap;
+    private TreeMap<String, Customer> customersByName;
 
     //constructor
     public BankService() {
@@ -23,11 +26,17 @@ public class BankService {
         this.accounts = new ArrayList<>();
         this.cards = new ArrayList<>();
         this.customers = new ArrayList<>();
+        this.customerMap = new TreeMap<>();
+        this.customersByName = new TreeMap<>();
     }
 
     //methods
     public void addCustomer(Customer customer) {
         customers.add(customer);
+        customerMap.put(customer.getPersonalIdentificationNumber(), customer);
+        String nameKey = customer.getLastName().toLowerCase() + "_" + customer.getFirstName().toLowerCase();
+        customersByName.put(nameKey, customer);
+
         System.out.println("Model.Customer added: " + customer.getFirstName() + " " + customer.getLastName());
         AuditLogger.log("Model.Customer added: " + customer.getFirstName() + " " + customer.getLastName());
     }
@@ -97,14 +106,8 @@ public class BankService {
     }
 
     // gaseste un client dupa CNP
-    public Customer findCustomerByCNP(String cnp)
-    {
-        for (Customer c : customers) {
-            if(c.getPersonalIdentificationNumber().equals(cnp)) {
-                return c;
-            }
-        }
-        return null;
+    public Customer findCustomerByCNP(String cnp) {
+        return customerMap.get(cnp);
     }
 
     // gaseste un cont dupa IBAN
@@ -117,14 +120,22 @@ public class BankService {
         return null;
     }
 
+    // gaseste un client dupa nume_prenume
+    public void showCustomersSortedByName() {
+        for (Map.Entry<String, Customer> entry : customersByName.entrySet()) {
+            System.out.println(entry.getValue());
+        }
+    }
+
     public List<Customer> getCustomers() {
         return customers;
     }
 
     public BankCard findCardByNumber(String nr) {
         for (BankCard c : cards) {
-            if (c.getCardNumber().equals(nr)) {}
+            if (c.getCardNumber().equals(nr)) {
                 return c;
+            }
         }
         return null;
     }

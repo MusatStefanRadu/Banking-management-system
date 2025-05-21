@@ -2,6 +2,7 @@ package Card;
 
 import java.time.LocalDate;
 import Account.BankAccount;
+import Model.TransactionCard;
 
 public class VirtualCard extends BankCard {
 
@@ -25,7 +26,7 @@ public class VirtualCard extends BankCard {
     }
 
     // method to simulate using the card
-    public void useCard(double amount) {
+    public void useCard(double amount, String merchant) {
         if (!isActive) {
             System.out.println("Card is not active.");
             return;
@@ -41,6 +42,10 @@ public class VirtualCard extends BankCard {
         if (linkedAccount.getBalance() >= amount) {
             linkedAccount.withdraw(amount);
             usageLimit--;
+
+            TransactionCard transaction = new TransactionCard(merchant, amount, this.cardNumber);
+            addTranzactie(transaction);
+
             System.out.println("Payment successful. Remaining uses: " + usageLimit);
         } else {
             System.out.println("Insufficient balance in linked account.");

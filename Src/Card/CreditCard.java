@@ -2,6 +2,7 @@ package Card;
 
 import java.time.LocalDate;
 import Account.BankAccount;
+import Model.TransactionCard;
 
 public class CreditCard extends BankCard {
 
@@ -31,9 +32,9 @@ public class CreditCard extends BankCard {
     }
 
     // method to make a purchase
-    public void makePurchase(double amount) {
+    public void makePurchase(double amount, String merchant) {
         if (!isActive) {
-            System.out.println("Cannot make purchase: the card is not active.");
+            System.out.println("Card is not active.");
             return;
         }
         if (amount <= 0) {
@@ -42,11 +43,16 @@ public class CreditCard extends BankCard {
         }
         if (amountOwed + amount <= creditLimit) {
             amountOwed += amount;
-            System.out.println("Purchase successful! New amount owed: " + amountOwed);
+
+            TransactionCard transaction = new TransactionCard(merchant, amount, this.cardNumber);
+            addTranzactie(transaction);
+
+            System.out.println("Purchase successful. New amount owed: " + amountOwed);
         } else {
             System.out.println("Purchase declined: credit limit exceeded.");
         }
     }
+
 
     // method to pay debt
     public void payDebt(double amount) {

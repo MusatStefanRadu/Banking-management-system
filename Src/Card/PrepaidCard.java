@@ -2,6 +2,7 @@ package Card;
 
 import java.time.LocalDate;
 import Account.BankAccount;
+import Model.TransactionCard;
 
 public class PrepaidCard extends BankCard {
 
@@ -36,10 +37,14 @@ public class PrepaidCard extends BankCard {
             return;
         }
         balance += amount;
+
+        TransactionCard transaction = new TransactionCard("Top-up", amount, this.cardNumber);
+        addTranzactie(transaction);
+
         System.out.println("Reload successful. New balance: " + balance);
     }
 
-    public void spend(double amount) {
+    public void spend(double amount, String merchant) {
         if (!isActive) {
             System.out.println("Cannot spend: card is not active.");
             return;
@@ -50,6 +55,10 @@ public class PrepaidCard extends BankCard {
         }
         if (balance >= amount) {
             balance -= amount;
+
+            TransactionCard transaction = new TransactionCard(merchant, amount, this.cardNumber);
+            addTranzactie(transaction);
+
             System.out.println("Payment successful. Remaining balance: " + balance);
         } else {
             System.out.println("Insufficient funds on prepaid card.");
