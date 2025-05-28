@@ -6,6 +6,7 @@ public abstract class BankAccount {
 
     //------------------------------------------fields-----------------------------------------------------
     protected String iban;
+    protected int id;
     protected double balance;
     protected Customer customer;
     protected String currency;
@@ -31,11 +32,12 @@ public abstract class BankAccount {
     public String getCurrency() {
         return currency;
     }
+    public int getId() { return id; }
     //--------------------------------------------setters--------------------------------------------------
     public void setBalance(double balance) {
         this.balance = balance;
     }
-
+    public void setId(int id) { this.id  = id; }
     //------------------------------------------operations------------------------------------------------
     public void deposit(double amount)
     {

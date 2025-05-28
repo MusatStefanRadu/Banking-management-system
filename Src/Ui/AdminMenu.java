@@ -1,10 +1,11 @@
 package Ui;
-
+import java.util.*;
 import Account.*;
 import Card.*;
 import Model.Customer;
 import Service.*;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 import java.time.LocalDate;
 
@@ -20,7 +21,9 @@ public class AdminMenu {
             System.out.println("2. Create new account");
             System.out.println("3. Create new card");
             System.out.println("4. Show all customers");
-            System.out.println("5. Back to main menu");
+            System.out.println("5. Delete customer");
+            System.out.println("6. Delete account");
+            System.out.println("7. Back to main menu");
             System.out.print("Choose an option: ");
 
             String option = scanner.nextLine();
@@ -38,6 +41,12 @@ public class AdminMenu {
                     showAllCustomers(bankService);
                     break;
                 case "5":
+                    deleteCustomer(bankService, scanner);
+                    break;
+                case "6":
+                    deleteAccount(bankService, scanner);
+                    break;
+                case "7":
                     inAdminMenu = false;
                     break;
                 default:
@@ -55,29 +64,39 @@ public class AdminMenu {
 
 
     public static void createCustomer(BankService bankService, Scanner scanner) {
-        System.out.print("First name: ");
-        String firstName = scanner.nextLine();
+        try {
+            System.out.print("First name: ");
+            String firstName = scanner.nextLine();
 
-        System.out.print("Last name: ");
-        String lastName = scanner.nextLine();
+            System.out.print("Last name: ");
+            String lastName = scanner.nextLine();
 
-        System.out.print("Age: ");
-        int age = Integer.parseInt(scanner.nextLine());
+            System.out.print("Age: ");
+            int age = Integer.parseInt(scanner.nextLine());
 
-        System.out.print("CNP (Personal ID Number): ");
-        String cnp = scanner.nextLine();
+            System.out.print("CNP (Personal ID Number): ");
+            String cnp = scanner.nextLine();
 
-        System.out.print("Address: ");
-        String address = scanner.nextLine();
+            System.out.print("Address: ");
+            String address = scanner.nextLine();
 
-        System.out.print("Is this a company? (yes/no): ");
-        String companyInput = scanner.nextLine().toLowerCase();
-        boolean isCompany = companyInput.equals("yes");
+            System.out.print("Is this a company? (yes/no): ");
+            boolean isCompany = scanner.nextLine().equalsIgnoreCase("yes");
 
-        Customer newCustomer = new Customer(firstName, lastName, age, cnp, address, isCompany);
-        bankService.addCustomer(newCustomer);
-        System.out.println("New customer created.");
+            Customer newCustomer = new Customer(
+                    firstName, lastName, age, cnp, address, isCompany, LocalDateTime.now()
+            );
+
+            if (bankService.addCustomer(newCustomer)) {
+                System.out.println("Customer created and saved to database successfully!");
+            } else {
+                System.out.println("Failed to create customer.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
     }
+
 
     public static void createAccount(BankService bankService, Scanner scanner) {
         System.out.print("Enter customer CNP: ");
@@ -143,8 +162,11 @@ public class AdminMenu {
                 System.out.println("Invalid account type.");
                 return;
         }
-        bankService.addAccount(account);
-        System.out.println("Account created successfully.");
+        if (bankService.createAccount(account)) {
+            System.out.println("Account created and saved to database successfully!");
+        } else {
+            System.out.println("Failed to create account.");
+        }
     }
 
     public static void createCard(BankService bankService, Scanner scanner) {
@@ -210,16 +232,50 @@ public class AdminMenu {
     }
 
     public static void showAllCustomers(BankService bankService) {
-        System.out.println("\n--- All Registered Customers ---");
+        try {
+            System.out.println("\n--- All Registered Customers (From Database) ---");
+            List<Customer> customers = bankService.getAllCustomers();
 
-        if (bankService.getCustomers().isEmpty()) {
-            System.out.println("No customers registered.");
-            return;
+            if (customers.isEmpty()) {
+                System.out.println("No customers found in database.");
+                return;
+            }
+
+            for (Customer c : customers) {
+                System.out.println("ID: " + c.getId());
+                System.out.println("Name: " + c.getFirstName() + " " + c.getLastName());
+                System.out.println("CNP: " + c.getPersonalIdentificationNumber());
+                System.out.println("Type: " + (c.getIsCompany() ? "Company" : "Individual"));
+                System.out.println("Registered: " + c.getRegistrationDate());
+                System.out.println("-----------------------------");
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading customers: " + e.getMessage());
         }
+    }
 
-        for (Customer c : bankService.getCustomers()) {
-            System.out.println(c);
-            System.out.println("-----------------------------");
+    public static void deleteCustomer(BankService bankService, Scanner scanner) {
+        System.out.print("Enter customer CNP to delete: ");
+        String cnp = scanner.nextLine();
+
+        boolean success = bankService.deleteCustomerByCNP(cnp);
+        if (success) {
+            System.out.println("Customer deleted successfully.");
+        } else {
+            System.out.println("Failed to delete customer.");
+        }
+    }
+
+
+    public static void deleteAccount(BankService bankService, Scanner scanner) {
+        System.out.print("Enter IBAN to delete: ");
+        String iban = scanner.nextLine();
+
+        boolean success = bankService.deleteAccountByIban(iban);
+        if (success) {
+            System.out.println("Account deleted successfully.");
+        } else {
+            System.out.println("Failed to delete account.");
         }
     }
 }
