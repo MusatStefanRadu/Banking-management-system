@@ -1,12 +1,16 @@
 package Service;
 
 import Account.*;
-import Card.BankCard;
+import Card.*;
 import Model.Customer;
 import Model.Transaction;
 import Util.CurrencyConverter;
+import repository.config.DatabaseConnection;
 import repository.dao.*;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +18,23 @@ import java.util.Map;
 
 public class BankService {
 
-    private final CustomerDAO customerDao = CustomerDAO.getInstance();
+    private final Connection connection;
 
+    public BankService() {
+        this.connection = DatabaseConnection.getInstance().getConnection();
+    }
+
+    private static BankService instance;
+
+    public static BankService getInstance() {
+        if (instance == null) {
+            instance = new BankService();
+        }
+        return instance;
+    }
+
+    private final CustomerDAO customerDao = CustomerDAO.getInstance();
     private final List<Transaction> transactions = new ArrayList<>();
-    private final List<BankCard> cards = new ArrayList<>();
 
     // ==================== Customer logic ====================
 
@@ -116,15 +133,20 @@ public class BankService {
     }
 
     public BankAccount findBankAccountByIban(String iban) {
-        // This requires each DAO to implement a method getByIban().
-        // For demo purposes, we will try with SavingsAccountDAO (you can generalize later)
-        try {
-            return SavingsAccountDAO.getInstance().getAccountByIban(iban);
-        } catch (SQLException e) {
-            System.err.println("Error finding account: " + e.getMessage());
-            return null;
+        for (AccountDAO dao : List.of(
+                SavingsAccountDAO.getInstance(),
+                BusinessAccountDAO.getInstance(),
+                CurrentAccountDAO.getInstance(),
+                InvestmentAccountDAO.getInstance()
+        )) {
+            try {
+                BankAccount acc = dao.getAccountByIban(iban);
+                if (acc != null) return acc;
+            } catch (SQLException ignored) {}
         }
+        return null;
     }
+
 
     public void showCustomerAccounts(Customer customer) {
         System.out.println("Accounts for customer: " + customer.getFirstName() + " " + customer.getLastName());
@@ -169,6 +191,7 @@ public class BankService {
 
             if (deleted) {
                 AuditLogger.log("Account deleted: " + iban);
+                System.out.println("DEBUG: Account type: " + account.getClass().getSimpleName());
             }
 
             return deleted;
@@ -178,23 +201,101 @@ public class BankService {
         }
     }
 
+    public boolean updateAccount(BankAccount account) {
+        try {
+            AccountDAO dao = getSpecificAccountDAO(account);
+            return dao.updateAccount(account);
+        } catch (SQLException e) {
+            System.err.println("Failed to update account: " + e.getMessage());
+            return false;
+        }
+    }
+
 
     // ==================== Card logic (in-memory) ====================
 
-    public void addCard(BankCard card) {
-        cards.add(card);
-        System.out.println("Card added for customer: " + card.getCardHolderName());
-        AuditLogger.log("Card created for: " + card.getCardHolderName());
+    public boolean addCard(BankCard card) {
+        try {
+            CardDAO dao = getSpecificCardDAO(card);
+            boolean success = dao.createCard(card);
+            if (success) {
+                AuditLogger.log("Card created: " + card.getCardNumber());
+            }
+            return success;
+        } catch (SQLException e) {
+            System.err.println("Database error when adding card: " + e.getMessage());
+            return false;
+        }
     }
 
-    public BankCard findCardByNumber(String nr) {
-        for (BankCard c : cards) {
-            if (c.getCardNumber().equals(nr)) {
-                return c;
+
+    public BankCard findCardByNumber(String cardNumber) {
+        try {
+            // 1. Află tipul real din DB
+            String sql = "SELECT card_type FROM bank_cards WHERE card_number = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, cardNumber);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    String type = rs.getString("card_type");
+
+                    // 2. În funcție de tip, folosește DAO-ul potrivit
+                    return switch (type.toUpperCase()) {
+                        case "DEBIT" -> DebitCardDAO.getInstance().getCardByNumber(cardNumber);
+                        case "CREDIT" -> CreditCardDAO.getInstance().getCardByNumber(cardNumber);
+                        case "PREPAID" -> PrepaidCardDAO.getInstance().getCardByNumber(cardNumber);
+                        case "VIRTUAL" -> VirtualCardDAO.getInstance().getCardByNumber(cardNumber);
+                        default -> null;
+                    };
+                }
             }
+        } catch (Exception e) {
+            System.out.println("System error while retrieving card: " + e.getMessage());
         }
+
         return null;
     }
+
+
+
+    private CardDAO getSpecificCardDAO(BankCard card) {
+        if (card instanceof CreditCard) return CreditCardDAO.getInstance();
+        if (card instanceof DebitCard) return DebitCardDAO.getInstance();
+        if (card instanceof PrepaidCard) return PrepaidCardDAO.getInstance();
+        if (card instanceof VirtualCard) return VirtualCardDAO.getInstance();
+        throw new IllegalArgumentException("Unsupported card type: " + card.getClass().getSimpleName());
+    }
+
+    public boolean updateCard(BankCard card) {
+        try {
+            CardDAO dao = getSpecificCardDAO(card);
+            return dao.updateCard(card);
+        } catch (SQLException e) {
+            System.err.println("Failed to update card: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean deleteCardByNumber(String cardNumber) {
+        try {
+            BankCard card = findCardByNumber(cardNumber);
+            if (card == null) return false;
+
+            CardDAO dao = getSpecificCardDAO(card);
+            boolean deleted = dao.deleteCard(cardNumber);
+
+            if (deleted) {
+                AuditLogger.log("Card deleted: " + cardNumber);
+            }
+
+            return deleted;
+        } catch (SQLException e) {
+            System.err.println("Error deleting card: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
     // ==================== Transaction logic (in-memory) ====================
 

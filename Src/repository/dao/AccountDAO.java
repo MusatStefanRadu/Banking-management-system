@@ -80,4 +80,7 @@ public abstract class AccountDAO {
     public abstract boolean updateAccount(BankAccount account) throws SQLException;
 
     public abstract boolean deleteAccount(String iban) throws SQLException;
+
+    public abstract BankAccount getAccountByIban(String iban) throws SQLException;
+
 }

@@ -3,27 +3,26 @@ package repository.dao;
 import Account.BankAccount;
 import Account.BusinessAccount;
 import Account.CurrentAccount;
-import Card.CreditCard;
 import Card.BankCard;
-import repository.config.DatabaseConnection;
+import Card.DebitCard;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreditCardDAO extends CardDAO {
+public class DebitCardDAO extends CardDAO {
 
-    private static CreditCardDAO instance;
+    private static DebitCardDAO instance;
 
-    private CreditCardDAO() {
+    private DebitCardDAO() {
         super();
     }
 
-    public static CreditCardDAO getInstance() {
+    public static DebitCardDAO getInstance() {
         if (instance == null) {
-            synchronized (CreditCardDAO.class) {
+            synchronized (DebitCardDAO.class) {
                 if (instance == null) {
-                    instance = new CreditCardDAO();
+                    instance = new DebitCardDAO();
                 }
             }
         }
@@ -31,30 +30,29 @@ public class CreditCardDAO extends CardDAO {
     }
 
     @Override
-    public String getCardType() { return "CREDIT"; }
+    public String getCardType() {
+        return "DEBIT";
+    }
 
     @Override
     public boolean createCard(BankCard card) throws SQLException {
-        if (!(card instanceof CreditCard)) {
-            throw new IllegalArgumentException("Card is not a CreditCard");
+        if (!(card instanceof DebitCard)) {
+            throw new IllegalArgumentException("Card is not a DebitCard");
         }
 
-        CreditCard creditCard = (CreditCard) card;
+        DebitCard debitCard = (DebitCard) card;
 
-        connection.setAutoCommit(false);  // tranzacție
+        connection.setAutoCommit(false);
 
         try {
-            int id = createBaseCard(creditCard);
+            int id = createBaseCard(debitCard);
 
-            String sql = "INSERT INTO credit_cards (card_number, credit_limit, amount_owed) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO debit_cards (card_number) VALUES (?)";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, creditCard.getCardNumber());
-                stmt.setDouble(2, creditCard.getCreditLimit());
-                stmt.setDouble(3, creditCard.getAmountOwed());
+                stmt.setString(1, debitCard.getCardNumber());
 
-                int rowInserted = stmt.executeUpdate();
-
-                if (rowInserted > 0) {
+                int rows = stmt.executeUpdate();
+                if (rows > 0) {
                     connection.commit();
                     return true;
                 } else {
@@ -72,22 +70,12 @@ public class CreditCardDAO extends CardDAO {
 
     @Override
     public boolean updateCard(BankCard card) throws SQLException {
-        if (!(card instanceof CreditCard)) {
-            throw new IllegalArgumentException("Card is not a CreditCard");
+        if (!(card instanceof DebitCard)) {
+            throw new IllegalArgumentException("Card is not a DebitCard");
         }
 
-        CreditCard creditCard = (CreditCard) card;
-        boolean baseUpdated = updateBaseCard(creditCard);
-
-        String sql = "UPDATE credit_cards SET credit_limit = ?, amount_owed = ? WHERE card_number = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setDouble(1, creditCard.getCreditLimit());
-            stmt.setDouble(2, creditCard.getAmountOwed());
-            stmt.setString(3, creditCard.getCardNumber());
-
-            boolean specificUpdated = stmt.executeUpdate() > 0;
-            return baseUpdated && specificUpdated;
-        }
+        // Nu există date specifice pentru debit_card de actualizat, doar cele de bază
+        return updateBaseCard(card);
     }
 
     @Override
@@ -96,8 +84,8 @@ public class CreditCardDAO extends CardDAO {
         boolean specificDeleted = false;
         boolean baseDeleted = false;
 
-        try {
-            String sql = "DELETE FROM credit_cards WHERE card_number = ?";
+        try{
+            String sql = "DELETE FROM debit_cards WHERE card_number = ?";
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, cardNumber);
                 specificDeleted = stmt.executeUpdate() > 0;
@@ -107,7 +95,7 @@ public class CreditCardDAO extends CardDAO {
                 baseDeleted = deleteBaseCard(cardNumber);
             }
 
-            if (specificDeleted && baseDeleted) {
+            if(specificDeleted && baseDeleted){
                 connection.commit();
                 return true;
             } else {
@@ -122,13 +110,11 @@ public class CreditCardDAO extends CardDAO {
         }
     }
 
-
     @Override
-    public CreditCard getCardByNumber(String cardNumber) throws SQLException {
+    public DebitCard getCardByNumber(String cardNumber) throws SQLException {
         ResultSet baseRs = loadBaseCardByNumber(cardNumber);
         if (!baseRs.next()) return null;
 
-        // Recuperează date comune
         int id = baseRs.getInt("id");
         String holderName = baseRs.getString("card_holder_name");
         LocalDate expiry = baseRs.getDate("expiry_date").toLocalDate();
@@ -142,36 +128,23 @@ public class CreditCardDAO extends CardDAO {
             linkedAccount = findAccountById(accountId);
 
             if (!(linkedAccount instanceof CurrentAccount || linkedAccount instanceof BusinessAccount)) {
-                throw new IllegalArgumentException("CreditCard must be linked to a compatible account (Current or Business).");
+                throw new IllegalArgumentException("DebitCard must be linked to a compatible account (Current or Business).");
             }
         }
 
         baseRs.close();
 
-        // Recuperează credit info
-        String sql = "SELECT * FROM credit_cards WHERE card_number = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, cardNumber);
-            ResultSet rs = stmt.executeQuery();
-            if (!rs.next()) return null;
-
-            double creditLimit = rs.getDouble("credit_limit");
-            double amountOwed = rs.getDouble("amount_owed");
-
-            CreditCard card = new CreditCard(cardNumber, holderName, expiry, linkedAccount, cvv, pin, creditLimit);
-            card.setCardId(id);
-            card.setActive(isActive);
-            card.setAmountOwed(amountOwed);
-            rs.close();
-            return card;
-        }
+        DebitCard card = new DebitCard(cardNumber, holderName, expiry, linkedAccount, cvv, pin);
+        card.setCardId(id);
+        card.setActive(isActive);
+        return card;
     }
 
     @Override
     public List<BankCard> getCardsByCustomerId(int customerId) throws SQLException {
         List<BankCard> result = new ArrayList<>();
         String sql = "SELECT card_number FROM bank_cards WHERE account_id IN " +
-                "(SELECT account_id  FROM bank_accounts WHERE customer_id = ?) AND card_type = 'credit'";
+                "(SELECT id FROM bank_accounts WHERE customer_id = ?) AND card_type = 'DEBIT'";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, customerId);
@@ -182,27 +155,25 @@ public class CreditCardDAO extends CardDAO {
                 if (card != null) result.add(card);
             }
         }
+
         return result;
     }
 
     @Override
     public BankCard getCardById(int id) throws SQLException {
-        String cardNumber = null;
+        String sql = "SELECT card_number FROM bank_cards WHERE id = ? AND card_type = 'DEBIT'";
 
-        // caută card number-ul după id
-        String sql = "SELECT card_number FROM bank_cards WHERE id = ? AND card_type = 'CREDIT'";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
-                cardNumber = rs.getString("card_number");
-            } else {
-                return null;
+                String cardNumber = rs.getString("card_number");
+                return getCardByNumber(cardNumber);  // metoda deja implementată
             }
         }
 
-        // folosește metoda deja existentă
-        return getCardByNumber(cardNumber);
+        return null;
     }
 
 }

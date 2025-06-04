@@ -44,7 +44,7 @@ public class PrepaidCard extends BankCard {
         System.out.println("Reload successful. New balance: " + balance);
     }
 
-    public void spend(double amount, String merchant) {
+    public void makePayment(double amount, String merchant) {
         if (!isActive) {
             System.out.println("Cannot spend: card is not active.");
             return;
@@ -74,7 +74,8 @@ public class PrepaidCard extends BankCard {
                 "expiryDate: " + expiryDate + "\n" +
                 "balance: " + balance + "\n" +
                 "active: " + isActive + "\n" +
-                "}";
+                "linkedAccount IBAN: " + (linkedAccount != null ? linkedAccount.getIban() : "None")+
+        "}";
     }
 
 }

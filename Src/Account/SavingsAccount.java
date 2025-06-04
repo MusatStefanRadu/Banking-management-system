@@ -12,6 +12,11 @@ public class SavingsAccount extends BankAccount {
     public SavingsAccount(String iban, double balance, Customer customer, String currency, double minimumBalance, double interestRate)
     {
         super(iban, balance, customer, currency);
+
+        if (balance < minimumBalance) {
+            throw new IllegalArgumentException("Initial balance must be at least equal to the minimum balance.");
+        }
+
         this.minimumBalance = minimumBalance;
         this.interestRate = interestRate;
     }

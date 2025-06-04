@@ -2,6 +2,7 @@ package Ui;
 
 import Account.BankAccount;
 import Card.BankCard;
+import Service.BankService;
 import Service.CardAuthenticator;
 
 
@@ -9,6 +10,11 @@ public class ATM {
 
     private BankCard insertedCard;
     private boolean authenticated;
+    private final BankService bankService;
+
+    public ATM(BankService bankService) {
+        this.bankService = bankService;
+    }
 
     public void insertCard(BankCard card) {
         this.insertedCard = card;
@@ -66,6 +72,7 @@ public class ATM {
         try {
             BankAccount account = insertedCard.getLinkedAccount();
             account.withdraw(amount);
+            BankService.getInstance().updateAccount(account);
         } catch (UnsupportedOperationException e) {
             System.out.println("Cannot withdraw: this card is not linked to a bank account.");
         }

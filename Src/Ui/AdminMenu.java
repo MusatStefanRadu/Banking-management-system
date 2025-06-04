@@ -23,7 +23,8 @@ public class AdminMenu {
             System.out.println("4. Show all customers");
             System.out.println("5. Delete customer");
             System.out.println("6. Delete account");
-            System.out.println("7. Back to main menu");
+            System.out.println("7. Delete card");
+            System.out.println("8. Back to main menu");
             System.out.print("Choose an option: ");
 
             String option = scanner.nextLine();
@@ -47,6 +48,9 @@ public class AdminMenu {
                     deleteAccount(bankService, scanner);
                     break;
                 case "7":
+                    deleteCard(bankService, scanner);
+                    break;
+                case "8":
                     inAdminMenu = false;
                     break;
                 default:
@@ -104,7 +108,7 @@ public class AdminMenu {
 
         Customer customer = bankService.findCustomerByCNP(cnp);
         if (customer == null) {
-            System.out.println("Model.Customer not found.");
+            System.out.println("Customer not found.");
             return;
         }
 
@@ -121,47 +125,56 @@ public class AdminMenu {
         String currency = scanner.nextLine().toLowerCase();
 
         BankAccount account = null;
-        switch (type) {
-            case "current":
-                System.out.print("Overdraft limit: ");
-                double overdraft = Double.parseDouble(scanner.nextLine());
-                account = new CurrentAccount(iban, balance, customer, currency, overdraft);
-                break;
 
-            case "savings":
-                System.out.print("Minimum balance: ");
-                double minBalance = Double.parseDouble(scanner.nextLine());
-                System.out.print("Interest rate: ");
-                double interest = Double.parseDouble(scanner.nextLine());
-                account = new SavingsAccount(iban, balance, customer, currency, minBalance, interest);
-                break;
+        try {
+            switch (type) {
+                case "current" -> {
+                    System.out.print("Overdraft limit: ");
+                    double overdraft = Double.parseDouble(scanner.nextLine());
+                    account = new CurrentAccount(iban, balance, customer, currency, overdraft);
+                }
 
-            case "business":
-                if (!customer.getIsCompany()) {
-                    System.out.println("Model.Customer is not a company. Cannot create business account.");
+                case "savings" -> {
+                    System.out.print("Minimum balance: ");
+                    double minBalance = Double.parseDouble(scanner.nextLine());
+                    System.out.print("Interest rate: ");
+                    double interest = Double.parseDouble(scanner.nextLine());
+                    account = new SavingsAccount(iban, balance, customer, currency, minBalance, interest);
+                }
+
+                case "business" -> {
+                    if (!customer.getIsCompany()) {
+                        System.out.println("Customer is not a company. Cannot create business account.");
+                        return;
+                    }
+                    System.out.print("Company name: ");
+                    String companyName = scanner.nextLine();
+                    System.out.print("Registration number: ");
+                    String regNr = scanner.nextLine();
+                    System.out.print("VAT number: ");
+                    String vat = scanner.nextLine();
+                    account = new BusinessAccount(iban, balance, customer, currency, companyName, regNr, vat);
+                }
+
+                case "investment" -> {
+                    System.out.print("Portfolio value: ");
+                    double portfolio = Double.parseDouble(scanner.nextLine());
+                    System.out.print("Is investment locked? (yes/no): ");
+                    boolean locked = scanner.nextLine().equalsIgnoreCase("yes");
+                    account = new InvestmentAccount(iban, balance, customer, currency, portfolio, locked);
+                }
+
+                default -> {
+                    System.out.println("Invalid account type.");
                     return;
                 }
-                System.out.print("Company name: ");
-                String companyName = scanner.nextLine();
-                System.out.print("Registration number: ");
-                String regNr = scanner.nextLine();
-                System.out.print("VAT number: ");
-                String vat = scanner.nextLine();
-                account = new BusinessAccount(iban, balance, customer, currency, companyName, regNr, vat);
-                break;
-
-            case "investment":
-                System.out.print("Portfolio value: ");
-                double portfolio = Double.parseDouble(scanner.nextLine());
-                System.out.print("Is investment locked? (yes/no): ");
-                boolean locked = scanner.nextLine().equalsIgnoreCase("yes");
-                account = new InvestmentAccount(iban, balance, customer, currency, portfolio, locked);
-                break;
-
-            default:
-                System.out.println("Invalid account type.");
-                return;
+            }
+        } catch (IllegalArgumentException e) {
+            // Afișăm mesajul excepției fără stack trace
+            System.out.println("System error: " + e.getMessage());
+            return;
         }
+
         if (bankService.createAccount(account)) {
             System.out.println("Account created and saved to database successfully!");
         } else {
@@ -169,67 +182,102 @@ public class AdminMenu {
         }
     }
 
+
     public static void createCard(BankService bankService, Scanner scanner) {
         System.out.print("Enter customer CNP: ");
         String cnp = scanner.nextLine();
 
         Customer customer = bankService.findCustomerByCNP(cnp);
-        if(customer == null) {
-            System.out.println("Model.Customer not found.");
-            return;
-        }
-
-        System.out.print("Enter IBAN for the account to link: ");
-        String iban = scanner.nextLine();
-
-        BankAccount account = bankService.findBankAccountByIban(iban);
-        if (account == null) {
-            System.out.println("Account not found.");
+        if (customer == null) {
+            System.out.println("Customer not found.");
             return;
         }
 
         System.out.print("Card type (debit/credit/virtual/prepaid): ");
         String type = scanner.nextLine().toLowerCase();
 
-        String cardNumber = "4" + (int)(Math.random() * 1_0000_0000); // simulare card
+        BankAccount account = null;
+        if (!type.equals("prepaid")) {
+            System.out.print("Enter IBAN for the account to link: ");
+            String iban = scanner.nextLine();
+            account = bankService.findBankAccountByIban(iban);
+            if (account == null) {
+                System.out.println("Account not found.");
+                return;
+            }
+        }
+
+        String cardNumber = "4" + (int)(Math.random() * 1_0000_0000);
         String cvv = String.valueOf((int)(Math.random() * 900) + 100);
         LocalDate expiry = LocalDate.now().plusYears(4);
         String pin = null;
 
         BankCard card = null;
 
-        switch (type) {
-            case "debit":
-                System.out.print("Enter PIN: ");
-                pin = scanner.nextLine();
-                card = new DebitCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, pin);
-                break;
-            case "credit":
-                System.out.print("Enter PIN: ");
-                pin = scanner.nextLine();
-                System.out.print("Credit limit: ");
-                double creditLimit = Double.parseDouble(scanner.nextLine());
-                card = new CreditCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, pin, creditLimit);
-                break;
-            case "virtual":
-                System.out.print("Usage limit (number of uses): ");
-                int usageLimit = Integer.parseInt(scanner.nextLine());
-                card = new VirtualCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, usageLimit);
-                break;
-            case "prepaid":
-                System.out.print("Initial balance: ");
-                double balance = Double.parseDouble(scanner.nextLine());
-                System.out.print("Enter PIN: ");
-                pin = scanner.nextLine();
-                card = new PrepaidCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, cvv, pin, balance);
-                break;
-            default:
-                System.out.println("Invalid card type.");
-                return;
+        try {
+            switch (type) {
+                case "debit" -> {
+                    System.out.print("Enter PIN: ");
+                    pin = scanner.nextLine();
+                    card = new DebitCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, pin);
+                }
+
+                case "credit" -> {
+                    System.out.print("Enter PIN: ");
+                    pin = scanner.nextLine();
+                    System.out.print("Credit limit: ");
+                    double creditLimit = Double.parseDouble(scanner.nextLine());
+                    card = new CreditCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, pin, creditLimit);
+                }
+
+                case "virtual" -> {
+                    System.out.print("Usage limit (number of uses): ");
+                    int usageLimit = Integer.parseInt(scanner.nextLine());
+                    card = new VirtualCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, account, cvv, usageLimit);
+                }
+
+                case "prepaid" -> {
+                    System.out.print("Initial balance: ");
+                    double balance = Double.parseDouble(scanner.nextLine());
+                    System.out.print("Enter PIN: ");
+                    pin = scanner.nextLine();
+                    card = new PrepaidCard(cardNumber, customer.getFirstName() + " " + customer.getLastName(), expiry, cvv, pin, balance);
+                }
+
+                default -> {
+                    System.out.println("Invalid card type.");
+                    return;
+                }
+            }
+
+            if (card != null && bankService.addCard(card)) {
+                System.out.println("Card number: " + card.getCardNumber());
+                System.out.println("Card created and saved to database successfully!");
+            } else if (card != null) {
+                System.out.println("Failed to create card.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("System error: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
         }
-        bankService.addCard(card);
-        System.out.println("Card created successfully: " + cardNumber);
     }
+
+
+
+    public static void deleteCard(BankService bankService, Scanner scanner) {
+        System.out.print("Enter card number to delete: ");
+        String cardNumber = scanner.nextLine();
+
+        boolean deleted = bankService.deleteCardByNumber(cardNumber);
+        if (deleted) {
+            System.out.println("Card deleted successfully.");
+        } else {
+            System.out.println("Failed to delete card. It may not exist.");
+        }
+    }
+
 
     public static void showAllCustomers(BankService bankService) {
         try {

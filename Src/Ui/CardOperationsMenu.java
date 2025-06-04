@@ -6,7 +6,9 @@ import Card.PrepaidCard;
 import Card.VirtualCard;
 import Model.TransactionCard;
 import Service.BankService;
+import repository.dao.TransactionCardDAO;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class CardOperationsMenu {
@@ -50,11 +52,13 @@ public class CardOperationsMenu {
             switch (option) {
                 case "1":
                     card.activateCard();
+                    bankService.updateCard(card);
                     System.out.println("Card activated.");
                     break;
 
                 case "2":
                     card.deactivateCard();
+                    bankService.updateCard(card);
                     System.out.println("Card deactivated.");
                     break;
 
@@ -76,29 +80,30 @@ public class CardOperationsMenu {
                     }
 
                     if (card instanceof CreditCard) {
-                        ((CreditCard) card).makePurchase(amount, merchant);
+                        ((CreditCard) card).makePayment(amount, merchant);
                     } else if (card instanceof PrepaidCard) {
-                        ((PrepaidCard) card).spend(amount, merchant);
+                        ((PrepaidCard) card).makePayment(amount, merchant);
                     } else if (card instanceof VirtualCard) {
-                        ((VirtualCard) card).useCard(amount, merchant);
+                        ((VirtualCard) card).makePayment(amount, merchant);
                     } else {
                         System.out.println("This card type does not support payments.");
                     }
+
                     break;
 
                 case "5":
-                    List<TransactionCard> tranzactii = card.getTranzactii();
-                    if (tranzactii.isEmpty()) {
+                    List<TransactionCard> txList = card.getTranzactii();
+                    if (txList.isEmpty()) {
                         System.out.println("No transactions available.");
                     } else {
+                        txList.sort(Comparator.comparing(TransactionCard::getTimestamp).reversed());
                         System.out.println("--- Transaction History ---");
-                        for (TransactionCard t : tranzactii) {
-                            System.out.println(t);
-                        }
+                        txList.forEach(System.out::println);
                     }
                     break;
 
                 case "6":
+                    bankService.updateCard(card);
                     inCardMenu = false;
                     break;
 

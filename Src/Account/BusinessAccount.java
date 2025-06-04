@@ -2,7 +2,8 @@ package Account;
 
 import Model.Customer;
 
-public class BusinessAccount extends BankAccount {
+public class BusinessAccount extends BankAccount
+        implements SupportsDebitCard, SupportsCreditCard, SupportsVirtualCard{
     //fields
     private String companyName;
     private String registrationNumber;

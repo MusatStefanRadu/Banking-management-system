@@ -230,18 +230,39 @@ public class SavingsAccountDAO extends AccountDAO {
 
     @Override
     public boolean deleteAccount(String iban) throws SQLException {
-        String sql = "DELETE FROM savings_accounts WHERE account_id = " +
-                "(SELECT account_id FROM bank_accounts WHERE iban = ?)";
+        connection.setAutoCommit(false);
+        boolean specificDeleted = false;
+        boolean baseDeleted = false;
 
-        boolean specificDeleted;
+        try {
+            // 1. Ștergere din savings_accounts
+            String sqlSpecific = "DELETE FROM savings_accounts WHERE account_id = " +
+                    "(SELECT account_id FROM bank_accounts WHERE iban = ?)";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, iban);
-            specificDeleted = stmt.executeUpdate() > 0;
+            try (PreparedStatement stmt = connection.prepareStatement(sqlSpecific)) {
+                stmt.setString(1, iban);
+                specificDeleted = stmt.executeUpdate() > 0;
+            }
+
+            // 2. Ștergere din bank_accounts doar dacă prima a reușit
+            if (specificDeleted) {
+                baseDeleted = deleteBaseAccount(iban);
+            }
+
+            if (specificDeleted && baseDeleted) {
+                connection.commit();
+                return true;
+            } else {
+                connection.rollback();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
         }
-
-        boolean baseDeleted = deleteBaseAccount(iban);
-
-        return specificDeleted && baseDeleted;
     }
+
 }

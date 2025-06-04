@@ -3,12 +3,15 @@ package Card;
 import java.time.LocalDate;
 import Account.BankAccount;
 import Model.TransactionCard;
+import repository.dao.TransactionCardDAO;
+import java.sql.SQLException;
 
 import java.util.*;
 
 public abstract class BankCard {
 
     // fields
+    protected int id;
     protected String cardNumber;
     protected String cardHolderName;
     protected LocalDate expiryDate;
@@ -32,6 +35,7 @@ public abstract class BankCard {
     }
 
     // getters
+    public int getCardId() { return id; }
     public String getCardNumber() {
         return cardNumber;
     }
@@ -55,6 +59,7 @@ public abstract class BankCard {
     }
 
     // setters
+    public void setCardId(int id) { this.id = id; }
     public void setActive(boolean active) {
         this.isActive = active;
     }
@@ -62,16 +67,27 @@ public abstract class BankCard {
     // common methods
     public void activateCard() {
         this.isActive = true;
-    }
-    public void deactivateCard() {
-        this.isActive = false;
-    }
+                                                                    }
+                                                                    public void deactivateCard() {
+                                                                        this.isActive = false;
+                                                                    }
     public void addTranzactie(TransactionCard transaction) {
         transactions.add(transaction);
+        try {
+            TransactionCardDAO.getInstance().saveTransaction(transaction);
+        } catch (SQLException e) {
+            System.err.println("Error saving transaction: " + e.getMessage());
+        }
     }
+    public abstract void makePayment(double amount, String merchant);
 
     public List<TransactionCard> getTranzactii() {
-        return transactions;
+        try {
+            return TransactionCardDAO.getInstance().getTransactionsByCard(this.cardNumber);
+        } catch (SQLException e) {
+            System.err.println("Error loading transactions: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     @Override

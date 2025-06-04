@@ -2,23 +2,24 @@ package Account;
 
 import Model.Customer;
 
-public class CurrentAccount extends BankAccount {
-    // additional fields
+public class CurrentAccount extends BankAccount
+        implements SupportsCreditCard, SupportsDebitCard, SupportsVirtualCard {
 
+    // additional fields
     private double overdraftLimit;
 
-    //constructor
+    // constructor
     public CurrentAccount(String iban, double balance, Customer customer, String currency, double overdraftLimit) {
         super(iban, balance, customer, currency);
         this.overdraftLimit = overdraftLimit;
     }
 
-    //getters
+    // getters
     public double getOverdraftLimit() {
         return overdraftLimit;
     }
 
-    //setters
+    // setters
     public void setOverdraftLimit(double overdraftLimit) {
         this.overdraftLimit = overdraftLimit;
     }
@@ -26,16 +27,15 @@ public class CurrentAccount extends BankAccount {
     // implementation of the abstract withdraw method
     @Override
     public void withdraw(double amount) {
-        if(amount > 0)
-            if(balance + overdraftLimit >= amount)
+        if (amount > 0)
+            if (balance + overdraftLimit >= amount)
                 balance -= amount;
             else
                 System.out.println("Insufficient balance, including overdraft limit");
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Account.CurrentAccount{\n" +
                 "iban : " + iban + "\n" +
                 "balance : " + balance + "\n" +

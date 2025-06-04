@@ -140,24 +140,6 @@ public class BusinessAccountDAO extends AccountDAO {
         }
     }
 
-    @Override
-    public boolean deleteAccount(String iban) throws SQLException {
-        String sql = "DELETE FROM business_accounts WHERE account_id = " +
-                "(SELECT account_id FROM bank_accounts WHERE iban = ?)";
-
-        boolean specificDeleted = false;
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, iban);
-            specificDeleted = stmt.executeUpdate() > 0;
-        }
-
-        boolean baseDeleted = deleteBaseAccount(iban);
-
-        return specificDeleted && baseDeleted;
-    }
-
-
     public List<BankAccount> getAccountsByCustomerId(int customerId) throws SQLException {
         List<BankAccount> accounts = new ArrayList<>();
 
@@ -244,6 +226,42 @@ public class BusinessAccountDAO extends AccountDAO {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean deleteAccount(String iban) throws SQLException {
+        connection.setAutoCommit(false);
+        boolean specificDeleted = false;
+        boolean baseDeleted = false;
+
+        try {
+            // Ștergere din tabelul specific
+            String sqlSpecific = "DELETE FROM savings_accounts WHERE account_id = "+
+                         "(SELECT account_id FROM bank_accounts WHERE iban = ?)";
+            try (PreparedStatement stmt = connection.prepareStatement(sqlSpecific)) {
+                stmt.setString(1, iban);
+                specificDeleted = stmt.executeUpdate() > 0;
+            }
+
+            // Dacă a reușit ștergerea din tabelul specific, încercăm și baza
+            if (specificDeleted) {
+                baseDeleted = deleteBaseAccount(iban);
+            }
+
+            if (specificDeleted && baseDeleted) {
+                connection.commit();
+                return true;
+            } else {
+                connection.rollback();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
     }
 
 }

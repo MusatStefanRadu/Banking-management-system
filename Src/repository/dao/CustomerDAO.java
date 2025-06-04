@@ -139,9 +139,26 @@ public class CustomerDAO {
     public boolean deleteCustomerByCNP(String cnp) throws SQLException {
         if (!customerExists(cnp)) return false;
 
-        String sql = "DELETE FROM customers WHERE personal_identification_number = ?";
+        // 🆕 Ia ID-ul clientului
+        Optional<Customer> optionalCustomer = getCustomerByCNP(cnp);
+        if (optionalCustomer.isEmpty()) return false;
+
+        int customerId = optionalCustomer.get().getId();
+
+        // 🆕 Verifică dacă există conturi asociate
+        List<String> ibans = getCustomerIBANs(customerId);
+        if (!ibans.isEmpty()) {
+            System.out.println("Cannot delete customer. They have linked accounts:");
+            for (String iban : ibans) {
+                System.out.println("- IBAN: " + iban);
+            }
+            return false;
+        }
+
+        // 🧹 Dacă nu are conturi, îl ștergem
+        String sql = "DELETE FROM customers WHERE customer_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, cnp);
+            stmt.setInt(1, customerId);
             return stmt.executeUpdate() > 0;
         }
     }
@@ -173,4 +190,20 @@ public class CustomerDAO {
         customer.setId(rs.getInt("customer_id"));
         return customer;
     }
+
+    // Returnează lista IBAN-urilor pentru conturile unui client
+    public List<String> getCustomerIBANs(int customerId) throws SQLException {
+        List<String> ibans = new ArrayList<>();
+        String sql = "SELECT iban FROM bank_accounts WHERE customer_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ibans.add(rs.getString("iban"));
+            }
+        }
+        return ibans;
+    }
+
 }

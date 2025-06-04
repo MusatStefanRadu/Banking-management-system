@@ -19,7 +19,20 @@ public class TransactionCard {
         this.id = idCounter++;
     }
 
-    public String getComerciant() {
+    public TransactionCard(String comerciant, double amount, String cardNumber, LocalDate timestamp) {
+        this.comerciant = comerciant;
+        this.amount = amount;
+        this.cardNumber = cardNumber;
+        this.timestamp = timestamp;
+    }
+
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+
+    public String getMerchant() {
         return comerciant;
     }
 
