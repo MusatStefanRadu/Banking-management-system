@@ -86,7 +86,7 @@ public class CreditCard extends BankCard {
         }
 
         if (success) {
-            // Actualizează contul în DB
+            // Actualizeaza contul în DB
             try {
                 if (linkedAccount instanceof Account.SavingsAccount) {
                     repository.dao.SavingsAccountDAO.getInstance().updateAccount(linkedAccount);
@@ -96,10 +96,10 @@ public class CreditCard extends BankCard {
                     repository.dao.BusinessAccountDAO.getInstance().updateAccount(linkedAccount);
                 }
             } catch (Exception e) {
-                System.out.println("Eroare la actualizarea contului în DB: " + e.getMessage());
+                System.out.println("Error updating account in DB: " + e.getMessage());
             }
 
-            // Tranzacție
+            // Tranzactie
             TransactionCard transaction = new TransactionCard(merchant, amount, this.cardNumber);
             addTranzactie(transaction);
 
@@ -112,7 +112,7 @@ public class CreditCard extends BankCard {
         try {
             CreditCardDAO.getInstance().updateCard(this);
         } catch (SQLException e) {
-            System.err.println("Eroare la actualizarea datoriei în baza de date: " + e.getMessage());
+            System.err.println("Error updating account in DB: " + e.getMessage());
         }
     }
 
@@ -134,7 +134,7 @@ public class CreditCard extends BankCard {
         try {
             CreditCardDAO.getInstance().updateCard(this);
         } catch (SQLException e) {
-            System.err.println("Eroare la actualizarea datoriei în baza de date: " + e.getMessage());
+            System.err.println("Error updating account in DB:: " + e.getMessage());
         }
 
     }

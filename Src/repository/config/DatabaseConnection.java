@@ -10,7 +10,7 @@ public class DatabaseConnection {
 
     String URL = "jdbc:postgresql://localhost:5432/BankingSystemJava";
     String USER = "postgres";
-    String PASSWORD = "Radoi2004!";
+    String PASSWORD = "";
 
     private DatabaseConnection() {
         try {

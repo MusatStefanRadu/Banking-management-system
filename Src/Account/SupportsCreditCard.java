@@ -2,5 +2,5 @@
 package Account;
 
 public interface SupportsCreditCard {
-    // Marker interface pentru conturi care acceptă carduri de credit
+    // Marker interface pentru conturi care accepta carduri de credit
 }

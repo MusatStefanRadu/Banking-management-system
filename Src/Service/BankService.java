@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class BankService {
 
@@ -211,6 +212,47 @@ public class BankService {
         }
     }
 
+    public void depositFunds(BankAccount account) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter deposit amount: ");
+        double amount;
+
+        try {
+            amount = scanner.nextDouble();
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a numeric value.");
+            scanner.nextLine(); // curăță bufferul
+            return;
+        }
+
+        if (amount <= 0) {
+            System.out.println("Amount must be positive.");
+            return;
+        }
+
+        account.deposit(amount);
+        System.out.printf("Deposit successful. New balance: %.2f\n", account.getBalance());
+
+
+        Transaction depositTransaction = new Transaction(null, account, amount, "Cash deposit");
+        transactions.add(depositTransaction);
+        TransactionAccountDAO.getInstance().saveTransaction(depositTransaction);
+
+
+        try {
+            if (account instanceof CurrentAccount) {
+                CurrentAccountDAO.getInstance().updateAccount(account);
+            } else if (account instanceof BusinessAccount) {
+                BusinessAccountDAO.getInstance().updateAccount(account);
+            } else if (account instanceof SavingsAccount) {
+                SavingsAccountDAO.getInstance().updateAccount(account);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating account in database: " + e.getMessage());
+        }
+    }
+
+
 
     // ==================== Card logic (in-memory) ====================
 
@@ -297,7 +339,7 @@ public class BankService {
 
 
 
-    // ==================== Transaction logic (in-memory) ====================
+    // ==================== Transaction logic ======================
 
     public void transferMoney(BankAccount from, BankAccount to, double amount, String description) {
         if (amount <= 0) {
@@ -311,32 +353,26 @@ public class BankService {
 
         from.withdraw(amount);
 
-        double receivedAmount;
-        if (!from.getCurrency().equals(to.getCurrency())) {
-            receivedAmount = CurrencyConverter.convert(from.getCurrency(), to.getCurrency(), amount);
-        } else {
-            receivedAmount = amount;
-        }
+        double receivedAmount = from.getCurrency().equals(to.getCurrency())
+                ? amount
+                : CurrencyConverter.convert(from.getCurrency(), to.getCurrency(), amount);
 
         to.deposit(receivedAmount);
 
+        updateAccount(from);
+        updateAccount(to);
+
         Transaction transaction = new Transaction(from, to, amount, description);
         transactions.add(transaction);
+        TransactionAccountDAO.getInstance().saveTransaction(transaction);
 
         System.out.println("Transfer successful. Transaction ID: " + transaction.getId());
         AuditLogger.log("Transfer of " + amount + " " + from.getCurrency() +
-                " from " + from.getIban() +
-                " to " + to.getIban() +
+                " from " + from.getIban() + " to " + to.getIban() +
                 " (" + receivedAmount + " " + to.getCurrency() + ")");
     }
 
     public List<Transaction> getTransactionsForAccount(BankAccount account) {
-        List<Transaction> result = new ArrayList<>();
-        for (Transaction t : transactions) {
-            if (t.getSourceAccount().equals(account) || t.getDestinationAccount().equals(account)) {
-                result.add(t);
-            }
-        }
-        return result;
+        return TransactionAccountDAO.getInstance().getTransactionsForIBAN(account.getIban());
     }
 }

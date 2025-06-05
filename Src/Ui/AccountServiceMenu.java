@@ -25,7 +25,8 @@ public class AccountServiceMenu {
             System.out.println("1. View balance");
             System.out.println("2. Transfer money");
             System.out.println("3. View transactions");
-            System.out.println("4. Back");
+            System.out.println("4. Deposit money");
+            System.out.println("5. Back");
             System.out.print("Choose an option: ");
 
             String option = scanner.nextLine();
@@ -72,6 +73,10 @@ public class AccountServiceMenu {
                     break;
 
                 case "4":
+                    bankService.depositFunds(account);
+                    break;
+
+                case "5":
                     inAccountMenu = false;
                     break;
 

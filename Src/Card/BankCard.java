@@ -68,9 +68,11 @@ public abstract class BankCard {
     public void activateCard() {
         this.isActive = true;
                                                                     }
-                                                                    public void deactivateCard() {
-                                                                        this.isActive = false;
-                                                                    }
+
+    public void deactivateCard() {
+        this.isActive = false;
+    }
+
     public void addTranzactie(TransactionCard transaction) {
         transactions.add(transaction);
         try {
@@ -79,6 +81,7 @@ public abstract class BankCard {
             System.err.println("Error saving transaction: " + e.getMessage());
         }
     }
+
     public abstract void makePayment(double amount, String merchant);
 
     public List<TransactionCard> getTranzactii() {

@@ -24,9 +24,7 @@ public class InvestmentAccount extends BankAccount {
     }
 
     //setters
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
+    public void setLocked(boolean locked) { this.locked = locked; }
     public void setPortfolioValue(double portfolioValue) {
         this.portfolioValue = portfolioValue;
     }

@@ -1,9 +1,6 @@
 package Ui;
 
-import Card.BankCard;
-import Card.CreditCard;
-import Card.PrepaidCard;
-import Card.VirtualCard;
+import Card.*;
 import Model.TransactionCard;
 import Service.BankService;
 import repository.dao.TransactionCardDAO;
@@ -85,7 +82,9 @@ public class CardOperationsMenu {
                         ((PrepaidCard) card).makePayment(amount, merchant);
                     } else if (card instanceof VirtualCard) {
                         ((VirtualCard) card).makePayment(amount, merchant);
-                    } else {
+                    } else if (card instanceof DebitCard) {
+                        ((DebitCard) card).makePayment(amount, merchant);
+                    }else{
                         System.out.println("This card type does not support payments.");
                     }
 

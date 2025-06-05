@@ -47,17 +47,21 @@ public class Transaction {
 
     //setters
 
+    public void setTransactionDate(LocalDate transactionDate) {
+        this.transactionDate = transactionDate;
+    }
 
     //toString method
     @Override
     public String toString() {
         return "Model.Transaction{\n" +
                 "id: " + id + "\n" +
-                "from: " + sourceAccount.getIban() + "\n" +
+                "from: " + (sourceAccount != null ? sourceAccount.getIban() : "CASH") + "\n" +
                 "to: " + destinationAccount.getIban() + "\n" +
                 "amount: " + amount + "\n" +
                 "date: " + transactionDate + "\n" +
                 "description: " + description + "\n" +
                 "}";
     }
+
 }

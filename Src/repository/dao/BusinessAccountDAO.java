@@ -18,7 +18,7 @@ public class BusinessAccountDAO extends AccountDAO {
 
     public static BusinessAccountDAO getInstance() {
         if (instance == null) {
-            synchronized (BusinessAccountDAO.class) {
+            synchronized (BusinessAccountDAO.class) { //un singur thread are acces la aceasta instanta
                 if (instance == null) {
                     instance = new BusinessAccountDAO();
                 }
@@ -65,7 +65,7 @@ public class BusinessAccountDAO extends AccountDAO {
                 }
             }
         } catch (SQLException e) {
-            connection.rollback(); // dacă apare o excepție în oricare pas
+            connection.rollback(); // daca apare o excepțte în oricare pas
             throw e;
         } finally {
             connection.setAutoCommit(true);
@@ -243,7 +243,7 @@ public class BusinessAccountDAO extends AccountDAO {
                 specificDeleted = stmt.executeUpdate() > 0;
             }
 
-            // Dacă a reușit ștergerea din tabelul specific, încercăm și baza
+            // Daca a reusit stergerea din tabelul specific, incercam si baza
             if (specificDeleted) {
                 baseDeleted = deleteBaseAccount(iban);
             }

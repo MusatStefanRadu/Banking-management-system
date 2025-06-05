@@ -71,7 +71,7 @@ public class VirtualCard extends BankCard {
             try {
                 repository.dao.VirtualCardDAO.getInstance().updateCard(this);
             } catch (SQLException e) {
-                System.err.println("Eroare la actualizarea cardului virtual în DB: " + e.getMessage());
+                System.err.println("Error updating account in DB: " + e.getMessage());
             }
 
         } else {

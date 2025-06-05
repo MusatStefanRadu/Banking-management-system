@@ -2,5 +2,5 @@
 package Account;
 
 public interface SupportsVirtualCard {
-    // Marker interface pentru conturi care acceptă carduri virtuale
+    // Marker interface pentru conturi care accepta carduri virtuale
 }
